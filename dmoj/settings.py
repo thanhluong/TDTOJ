@@ -408,6 +408,7 @@ INSTALLED_APPS += (
     'django.contrib.sites',
     'django.contrib.sitemaps',
     'registration',
+    'auth_tdtu',
     'mptt',
     'reversion',
     'django_social_share',
@@ -723,12 +724,22 @@ CACHES = {}
 
 # Authentication
 AUTHENTICATION_BACKENDS = (
+    'auth_tdtu.auth_backends.TDTOAuth2',
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.facebook.FacebookOAuth2',
     'judge.social_auth.GitHubSecureEmailOAuth2',
     'django.contrib.auth.backends.ModelBackend',
     'judge.ip_auth.IPBasedAuthBackend',
 )
+
+SOCIAL_AUTH_TDT_KEY = 'TDTOJ_APP_CLIENT_TEST'
+SOCIAL_AUTH_TDT_SECRET = 'iwuiwoeu28782iwueiuejad'
+SOCIAL_AUTH_TDT_REDIRECT_URI = 'tdtoj.duthu.net/complete/tdt'
+SOCIAL_AUTH_USER_MODEL = "auth.User"  # Hoặc model user tùy chỉnh của bạn
+SOCIAL_AUTH_RAISE_EXCEPTIONS = True
+
+SOCIAL_AUTH_SESSION_STATE = True  # Giữ state trong session để tránh mất giá trị
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/"
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
