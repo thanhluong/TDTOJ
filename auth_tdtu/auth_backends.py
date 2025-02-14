@@ -28,7 +28,7 @@ class TDTOAuth2(BaseOAuth2):
             clean_redirect_uri = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path[:-1]}"
         else:
             clean_redirect_uri = redirect_uri  # Nếu không bị lỗi, giữ nguyên
-
+        print(clean_redirect_uri)
         return clean_redirect_uri  
 
     def get_user_details(self, response):
