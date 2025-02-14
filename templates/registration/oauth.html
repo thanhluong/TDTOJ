@@ -25,7 +25,7 @@
 {% endblock %}
     <h4>Or log in with</h4>
     <div>
-        <a href="{% url 'social:begin' 'tdt' %}">Login with TDT</a>
+        <a href="{% url('social:begin', 'tdt') %}">Login with TDT</a>
     </div>
 {% if oauth.has_google_auth or oauth.has_facebook_auth or oauth.has_github_auth %}
     <h4>{{ _('Or log in with...') }}</h4>
