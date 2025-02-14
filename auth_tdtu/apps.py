@@ -1,3 +1,5 @@
+from django.apps import AppConfig
+
 import os
 
 from dmoj.settings import BASE_DIR
