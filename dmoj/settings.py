@@ -734,7 +734,7 @@ AUTHENTICATION_BACKENDS = (
 
 SOCIAL_AUTH_TDT_KEY = 'TDTOJ_APP_CLIENT_TEST'
 SOCIAL_AUTH_TDT_SECRET = 'iwuiwoeu28782iwueiuejad'
-SOCIAL_AUTH_TDT_REDIRECT_URI = 'tdtoj.duthu.net/complete/tdt'
+SOCIAL_AUTH_TDT_REDIRECT_URI = 'http://188.166.254.61:8080/complete/tdt'
 SOCIAL_AUTH_USER_MODEL = "auth.User"  # Hoặc model user tùy chỉnh của bạn
 SOCIAL_AUTH_RAISE_EXCEPTIONS = True
 
