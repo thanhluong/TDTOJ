@@ -84,10 +84,11 @@ def get_username_password(backend, user, username=None, *args, **kwargs):
                 return {'username': form.cleaned_data['username'],
                         'password': form.cleaned_data['password']}
         else:
-            form = SocialPostAuthForm(initial={'username': username})
-        return render(request, 'registration/username_select.html', {
-            'title': 'Set up your account', 'form': form,
-        })
+            return {'username': username,
+                    'password': ''}
+        # return render(request, 'registration/username_select.html', {
+        #     'title': 'Set up your account', 'form': form,
+        # })
 
 
 def add_password(user, password=None, *args, **kwargs):
