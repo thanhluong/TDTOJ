@@ -26,6 +26,10 @@ from judge.views.select2 import AssigneeSelect2View, CommentSelect2View, Contest
     ContestUserSearchSelect2View, OrganizationSelect2View, OrganizationUserSelect2View, ProblemSelect2View, \
     TagGroupSelect2View, TagSelect2View, TicketUserSelect2View, UserSearchSelect2View, UserSelect2View
 from judge.views.widgets import martor_image_uploader
+from judge.views.api.custom_api import (
+    OrganizationAPIView, OrganizationContestsAPIView,
+    ContestScoreboardAPIView, OrganizationUsersAPIView
+)
 
 admin.autodiscover()
 
@@ -421,6 +425,11 @@ urlpatterns = [
     ])),
 
     path('magazine/', MagazinePage.as_view(), name='magazine'),
+
+    path('api/orgs/', OrganizationAPIView.as_view(), name='api_organizations'),
+    path('api/orgs/<int:org_id>/contests/', OrganizationContestsAPIView.as_view(), name='api_organization_contests'),
+    path('api/contests/<int:contest_id>/scoreboard/', ContestScoreboardAPIView.as_view(), name='api_contest_scoreboard'),
+    path('api/orgs/<int:org_id>/users/', OrganizationUsersAPIView.as_view(), name='api_organization_users'),
 ]
 
 favicon_paths = ['apple-touch-icon-180x180.png', 'apple-touch-icon-114x114.png', 'android-chrome-72x72.png',

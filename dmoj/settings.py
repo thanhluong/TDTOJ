@@ -54,7 +54,7 @@ VNOJ_ORG_PP_STEP = 0.95
 VNOJ_ORG_PP_ENTRIES = 100
 VNOJ_ORG_PP_SCALE = 1
 
-VNOJ_ENABLE_API = False
+VNOJ_ENABLE_API = True
 
 VNOJ_OFFICIAL_CONTEST_MODE = False
 
@@ -794,3 +794,11 @@ try:
         exec(f.read(), globals())
 except IOError:
     pass
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
