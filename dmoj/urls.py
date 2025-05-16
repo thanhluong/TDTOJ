@@ -28,7 +28,8 @@ from judge.views.select2 import AssigneeSelect2View, CommentSelect2View, Contest
 from judge.views.widgets import martor_image_uploader
 from judge.views.api.custom_api import (
     OrganizationAPIView, OrganizationContestsAPIView,
-    ContestScoreboardAPIView, OrganizationUsersAPIView
+    ContestScoreboardAPIView, OrganizationUsersAPIView,
+    TDTUOrganizationAPIView, TDTUOrganizationEditLinkView, TDTUOrganizationDeleteView
 )
 
 admin.autodiscover()
@@ -430,6 +431,12 @@ urlpatterns = [
     path('api/orgs/<int:org_id>/contests/', OrganizationContestsAPIView.as_view(), name='api_organization_contests'),
     path('api/contests/<int:contest_id>/scoreboard/', ContestScoreboardAPIView.as_view(), name='api_contest_scoreboard'),
     path('api/orgs/<int:org_id>/users/', OrganizationUsersAPIView.as_view(), name='api_organization_users'),
+    
+    # TDTU-specific API endpoints
+    path('api/tdtu/organizations/', TDTUOrganizationAPIView.as_view(), name='api_tdtu_organizations'),
+    path('api/tdtu/organizations/<int:org_id>/edit-link/', TDTUOrganizationEditLinkView.as_view(), name='api_tdtu_organization_edit_link'),
+    path('api/tdtu/organizations/<int:org_id>/', TDTUOrganizationDeleteView.as_view(), name='api_tdtu_organization_delete'),
+    path('api/tdtu/organizations/<int:org_id>/contests/', OrganizationContestsAPIView.as_view(), name='api_tdtu_organization_contests'),
 ]
 
 favicon_paths = ['apple-touch-icon-180x180.png', 'apple-touch-icon-114x114.png', 'android-chrome-72x72.png',

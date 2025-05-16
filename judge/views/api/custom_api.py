@@ -2,11 +2,48 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Max, Sum, Count
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.urls import reverse
 
 from judge.models import Organization, Contest, Profile, ContestParticipation, ContestSubmission, Problem, Submission
+
+
+def verify_token(token):
+    """
+    Placeholder for token verification.
+    In the future, this will call side A's API to verify the token.
+    """
+    # Mock implementation - always return success with dummy user data
+    user_data = {
+        'username': 'admin123',
+    }
+    return True, user_data
+
+
+def token_required(view_func):
+    def wrapped_view(request, *args, **kwargs):
+        token = request.headers.get('Authorization')
+        # if not token:
+        #     return JsonResponse({'error': 'Token is required'}, status=401)
+        
+        # # Remove 'Bearer ' prefix if present
+        # if token.startswith('Bearer '):
+        #     token = token[7:]
+        
+        is_valid, user_data = verify_token(token)
+        
+        if not is_valid:
+            return JsonResponse({'error': 'Invalid token'}, status=401)
+        
+        # Attach user data to request
+        request.user_data = user_data
+        
+        return view_func(request, *args, **kwargs)
+    
+    return wrapped_view
 
 
 class OrganizationAPIView(View):
@@ -265,4 +302,125 @@ class OrganizationUsersAPIView(View):
             ]
         }
         
-        return JsonResponse(result) 
+        return JsonResponse(result)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TDTUOrganizationAPIView(View):
+    @method_decorator(token_required)
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            
+            # Validate required fields
+            required_fields = ['name', 'slug', 'short_name']
+            for field in required_fields:
+                if field not in data:
+                    return JsonResponse({
+                        'error': f'Missing required field: {field}'
+                    }, status=400)
+
+            existing_organization = Organization.objects.filter(slug=data['slug']).first()
+            if existing_organization:
+                # Nếu tổ chức đã tồn tại, trả về redirect link cho contest
+                redirect_link = request.build_absolute_uri(
+                    reverse('admin:judge_contest_add')
+                )
+                return JsonResponse({
+                    'message': 'Organization already exists',
+                    'id': existing_organization.id,
+                    'name': existing_organization.name,
+                    'slug': existing_organization.slug,
+                    'short_name': existing_organization.short_name,
+                    'redirect_link': redirect_link
+                }, status=200)
+                
+            # Create organization
+            organization = Organization(
+                name=data['name'],
+                slug=data['slug'],
+                short_name=data['short_name'],
+                about=data.get('about', ''),
+                is_open=data.get('is_open', False),
+            )
+            organization.save()
+            
+            # Get the requesting user or create if not exists
+            try:
+                profile = Profile.objects.get(user__username=request.user_data['username'])
+            except Profile.DoesNotExist:
+                # In a real implementation, we would create a new user here
+                # For now, just return an error
+                return JsonResponse({'error': 'User not found'}, status=404)
+            
+            # Add user as admin
+            organization.admins.add(profile)
+            
+            # Add users to organization if provided
+            if 'users' in data and isinstance(data['users'], list):
+                for username in data['users']:
+                    try:
+                        user_profile = Profile.objects.get(user__username=username)
+                        organization.members.add(user_profile)
+                    except Profile.DoesNotExist:
+                        # Skip users that don't exist, but log them
+                        print(f"User {username} not found, skipping")
+            
+            # Generate redirect link for contest creation
+            redirect_link = request.build_absolute_uri(
+                reverse('admin:judge_contest_add')
+            )
+            
+            return JsonResponse({
+                'id': organization.id,
+                'name': organization.name,
+                'slug': organization.slug,
+                'short_name': organization.short_name,
+                'redirect_link': redirect_link
+            }, status=201)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+class TDTUOrganizationEditLinkView(View):
+    @method_decorator(token_required)
+    def get(self, request, org_id):
+        try:
+            organization = get_object_or_404(Organization, id=org_id)
+            
+            # Generate edit link
+            edit_path = f"/admin/judge/organization/{organization.id}/change/"
+            edit_link = request.build_absolute_uri(edit_path)
+            # edit_link = request.build_absolute_uri(
+            #     reverse('organization_edit', args=[organization.id])
+            # )
+            
+            return JsonResponse({
+                'organization_id': organization.id,
+                'edit_link': edit_link
+            })
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TDTUOrganizationDeleteView(View):
+    @method_decorator(token_required)
+    def delete(self, request, org_id):
+        try:
+            organization = get_object_or_404(Organization, id=org_id)
+            
+            # Store organization name for response
+            org_name = organization.name
+            
+            # Delete organization
+            organization.delete()
+            
+            return JsonResponse({
+                'message': f'Organization {org_name} deleted successfully'
+            })
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500) 
