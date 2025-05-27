@@ -427,13 +427,13 @@ urlpatterns = [
 
     path('magazine/', MagazinePage.as_view(), name='magazine'),
 
-    path('api/tdtu/organizations/', OrganizationAPIView.as_view(), name='api_organizations'),
+    # path('api/tdtu/organizations/', OrganizationAPIView.as_view(), name='api_organizations'),
     path('api/orgs/<int:org_id>/contests/', OrganizationContestsAPIView.as_view(), name='api_organization_contests'),
     path('api/contests/<int:contest_id>/scoreboard/', ContestScoreboardAPIView.as_view(), name='api_contest_scoreboard'),
     path('api/orgs/<int:org_id>/users/', OrganizationUsersAPIView.as_view(), name='api_organization_users'),
     
     # TDTU-specific API endpoints
-    # path('api/tdtu/organizations/', TDTUOrganizationAPIView.as_view(), name='api_tdtu_organizations'),
+    path('api/tdtu/organizations/', TDTUOrganizationAPIView.as_view(), name='api_tdtu_organizations'),
     path('api/tdtu/organizations/<int:org_id>/edit-link/', TDTUOrganizationEditLinkView.as_view(), name='api_tdtu_organization_edit_link'),
     path('api/tdtu/organizations/<int:org_id>/', TDTUOrganizationDeleteView.as_view(), name='api_tdtu_organization_delete'),
     path('api/tdtu/organizations/<int:org_id>/contests/', OrganizationContestsAPIView.as_view(), name='api_tdtu_organization_contests'),

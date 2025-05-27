@@ -8,8 +8,13 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.urls import reverse
 import datetime
-
+import random
+import string
 from judge.models import Organization, Contest, Profile, ContestParticipation, ContestSubmission, Problem, Submission
+
+def generate_random_key(length=16):
+    allowed_chars = string.ascii_lowercase + string.digits + '_'
+    return ''.join(random.choices(allowed_chars, k=length))
 
 
 def verify_token(token):
@@ -383,7 +388,44 @@ class TDTUOrganizationAPIView(View):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-
+        
+    @method_decorator(token_required)
+    def get(self, request):
+        organizations = Organization.objects.all()
+        
+        # Filtering
+        name = request.GET.get('name')
+        if name:
+            organizations = organizations.filter(name__icontains=name)
+        
+        # Pagination
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 50))
+        start = (page - 1) * page_size
+        end = page * page_size
+        
+        total_count = organizations.count()
+        organizations = organizations[start:end]
+        
+        result = {
+            'count': total_count,
+            'page': page,
+            'page_size': page_size,
+            'results': [
+                {
+                    'id': org.id,
+                    'name': org.name,
+                    'slug': org.slug,
+                    'short_name': org.short_name,
+                    'about': org.about,
+                    'is_open': org.is_open,
+                    'member_count': org.members.count(),
+                }
+                for org in organizations
+            ]
+        }
+        
+        return JsonResponse(result)
 
 class TDTUOrganizationEditLinkView(View):
     @method_decorator(token_required)
@@ -443,6 +485,7 @@ class TDTUCreateContestView(View):
                 is_private=is_private,
                 start_time=datetime.datetime.now(),
                 end_time=datetime.datetime.now(),
+                key=generate_random_key(),
             )
             contest.organizations.add(organization)
 
