@@ -7,6 +7,7 @@ from django.db.models import Max, Sum, Count
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.urls import reverse
+import datetime
 
 from judge.models import Organization, Contest, Profile, ContestParticipation, ContestSubmission, Problem, Submission
 
@@ -424,3 +425,96 @@ class TDTUOrganizationDeleteView(View):
             
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500) 
+        
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TDTUCreateContestView(View):
+    @method_decorator(token_required)
+    def post(self, request, org_id):
+        try:
+            organization = get_object_or_404(Organization, id=org_id)
+
+            data = json.loads(request.body)
+            contest_name = data.get("name", "New Contest")
+            is_private = data.get("is_private", True)
+
+            contest = Contest.objects.create(
+                name=contest_name,
+                is_private=is_private,
+                start_time=datetime.datetime.now(),
+                end_time=datetime.datetime.now(),
+            )
+            contest.organizations.add(organization)
+
+            # Trả về link tạo contest trong Django admin
+            redirect_link = request.build_absolute_uri(
+                reverse('admin:judge_contest_change', args=[contest.id])
+            )
+
+            return JsonResponse({
+                'contest_id': contest.id,
+                'contest_name': contest.name,
+                'redirect_link': redirect_link
+            }, status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+class TDTUContestEditLinkView(View):
+    @method_decorator(token_required)
+    def get(self, request, org_id, contest_id):
+        try:
+            # Xác thực organization tồn tại
+            organization = get_object_or_404(Organization, id=org_id)
+
+            # Xác thực contest tồn tại
+            contest = get_object_or_404(Contest, id=contest_id)
+
+            # Kiểm tra contest có thuộc về organization không
+            if not contest.organizations.filter(id=organization.id).exists():
+                return JsonResponse({'error': 'Contest does not belong to this organization'}, status=403)
+
+            # Tạo link chỉnh sửa contest trong admin
+            edit_link = request.build_absolute_uri(
+                reverse('admin:judge_contest_change', args=[contest.id])
+            )
+
+            return JsonResponse({
+                'contest_id': contest.id,
+                'organization_id': organization.id,
+                'edit_link': edit_link
+            })
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class TDTUContestDeleteView(View):
+    @method_decorator(token_required)
+    def delete(self, request, org_id, contest_id):
+        try:
+            # Xác thực organization
+            organization = get_object_or_404(Organization, id=org_id)
+
+            # Xác thực contest
+            contest = get_object_or_404(Contest, id=contest_id)
+
+            # Kiểm tra contest có thuộc organization không
+            if not contest.organizations.filter(id=organization.id).exists():
+                return JsonResponse({
+                    'error': 'Contest does not belong to this organization'
+                }, status=403)
+
+            contest_name = contest.name
+            contest.delete()
+
+            return JsonResponse({
+                'message': f'Contest "{contest_name}" (ID: {contest_id}) deleted successfully.'
+            }, status=200)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
