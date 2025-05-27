@@ -58,8 +58,8 @@ class TDTOAuth2(BaseOAuth2):
         
         # B2: Lấy client_id và client_secret từ settings
         host = self.strategy.request_host()
-        print(host)
-        client_id = self.setting('SOCIAL_AUTH_TDT_KEY')         
+        
+        client_id = self.setting('SOCIAL_AUTH_TDT_KEY_DEV') if '188.166.254.61' in host else self.setting('SOCIAL_AUTH_TDT_KEY_PROD')      
         client_secret = self.setting('SOCIAL_AUTH_TDT_SECRET')   
 
         # Tạo Basic Auth code: base64("CLIENT_ID:CLIENT_SECRET")
@@ -73,7 +73,7 @@ class TDTOAuth2(BaseOAuth2):
         }
         
         # B3: Lấy redirect_uri từ settings (cần phải khớp với những gì đã đăng ký với provider)
-        redirect_uri = self.setting('SOCIAL_AUTH_TDT_REDIRECT_URI')  # Tương ứng với 
+        redirect_uri = self.setting('SOCIAL_AUTH_TDT_REDIRECT_URI_DEV') if '188.166.254.61' in host else self.setting('SOCIAL_AUTH_TDT_REDIRECT_URI_PROD')  # Tương ứng với 
         
         # B4: Tạo payload cho POST request
         payload = {
