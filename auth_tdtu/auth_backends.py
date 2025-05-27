@@ -45,19 +45,6 @@ class TDTOAuth2(BaseOAuth2):
     def get_user_id(self, details, response):
         return response.get('uid')
 
-    def get_key_and_secret(self):
-        host = self.strategy.request_host()  # Lấy domain từ request
-
-        if '188.166.254.61' in host:
-            return (
-                self.setting('SOCIAL_AUTH_TDT_KEY_DEV'),
-                self.setting('SOCIAL_AUTH_TDT_SECRET')
-            )
-        else:
-            return (
-                self.setting('SOCIAL_AUTH_TDT_KEY'),
-                self.setting('SOCIAL_AUTH_TDT_SECRET')
-            )
 
 
     def auth_complete(self, *args, **kwargs):
@@ -68,9 +55,10 @@ class TDTOAuth2(BaseOAuth2):
         code = self.strategy.request_data().get('code')
         if not code:
             raise AuthException(self, 'Missing authorization code.')
+        
         # B2: Lấy client_id và client_secret từ settings
         host = self.strategy.request_host()
-        client_id = self.setting('SOCIAL_AUTH_TDT_KEY_DEV') if '188.166.254.61' in host else self.setting('SOCIAL_AUTH_TDT_KEY')    
+        client_id = self.setting('SOCIAL_AUTH_TDT_KEY')         
         client_secret = self.setting('SOCIAL_AUTH_TDT_SECRET')   
 
         # Tạo Basic Auth code: base64("CLIENT_ID:CLIENT_SECRET")
@@ -84,7 +72,7 @@ class TDTOAuth2(BaseOAuth2):
         }
         
         # B3: Lấy redirect_uri từ settings (cần phải khớp với những gì đã đăng ký với provider)
-        redirect_uri = self.setting('SOCIAL_AUTH_TDT_REDIRECT_URI_DEV') if '188.166.254.61' in host else self.setting('SOCIAL_AUTH_TDT_REDIRECT_URI')  # Tương ứng với 
+        redirect_uri = self.setting('SOCIAL_AUTH_TDT_REDIRECT_URI')  # Tương ứng với 
         
         # B4: Tạo payload cho POST request
         payload = {
