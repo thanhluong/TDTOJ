@@ -732,6 +732,7 @@ AUTHENTICATION_BACKENDS = (
     'judge.ip_auth.IPBasedAuthBackend',
 )
 
+# SOCIAL_AUTH_TDT_KEY = 'TDTOJ_APP_CLIENT'
 SOCIAL_AUTH_TDT_KEY = 'TDTOJ_APP_CLIENT_TEST'
 SOCIAL_AUTH_TDT_SECRET = 'iwuiwoeu28782iwueiuejad'
 # SOCIAL_AUTH_TDT_REDIRECT_URI = 'https://tdtoj.duthu.net/complete/tdt'

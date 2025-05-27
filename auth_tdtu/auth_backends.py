@@ -52,14 +52,15 @@ class TDTOAuth2(BaseOAuth2):
         Ghi đè auth_complete để gộp bước lấy Access Token và lấy thông tin user thành một bước.
         """
         # B1: Lấy code từ query string (callback URI)
-        print("Start call API")
         code = self.strategy.request_data().get('code')
         if not code:
             raise AuthException(self, 'Missing authorization code.')
-
+        
         # B2: Lấy client_id và client_secret từ settings
-        client_id = self.setting('SOCIAL_AUTH_TDT_KEY')         # Tương ứng với SOCIAL_AUTH_EXAMPLEAPI_KEY
-        client_secret = self.setting('SOCIAL_AUTH_TDT_SECRET')    # Tương ứng với SOCIAL_AUTH_EXAMPLEAPI_SECRET
+        host = self.strategy.request_host()
+        print(host)
+        client_id = self.setting('SOCIAL_AUTH_TDT_KEY')         
+        client_secret = self.setting('SOCIAL_AUTH_TDT_SECRET')   
 
         # Tạo Basic Auth code: base64("CLIENT_ID:CLIENT_SECRET")
         basic_auth_str = f"{client_id}:{client_secret}"
@@ -72,7 +73,7 @@ class TDTOAuth2(BaseOAuth2):
         }
         
         # B3: Lấy redirect_uri từ settings (cần phải khớp với những gì đã đăng ký với provider)
-        redirect_uri = self.setting('SOCIAL_AUTH_TDT_REDIRECT_URI')  # Tương ứng với SOCIAL_AUTH_EXAMPLEAPI_REDIRECT_URI
+        redirect_uri = self.setting('SOCIAL_AUTH_TDT_REDIRECT_URI')  # Tương ứng với 
         
         # B4: Tạo payload cho POST request
         payload = {
