@@ -561,3 +561,70 @@ class TDTUContestDeleteView(View):
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+        
+
+class TDTUContestRankingView(View):
+    @method_decorator(token_required)
+    def get(self, request, contest_id):
+        try:
+            contest = get_object_or_404(Contest, id=contest_id)
+
+            # Lấy tất cả user đã tham gia contest
+            participations = ContestParticipation.objects.filter(
+                contest=contest,
+                virtual=0
+            ).select_related('user')
+
+            problems = list(contest.contest_problems.order_by('order')
+                            .select_related('problem')
+                            .only('id', 'problem__name', 'problem__code', 'points'))
+
+            scoreboard = []
+            for participation in participations:
+                user = participation.user
+                user_profile = {
+                    'id': user.id,
+                    'username': user.user.username,
+                    'rating': user.rating,
+                    'points': user.points,
+                }
+
+                # Tính điểm theo bài
+                submissions = ContestSubmission.objects.filter(
+                    participation=participation
+                ).values('problem_id').annotate(
+                    score=Max('points')
+                )
+
+                problem_scores = {p['problem_id']: p['score'] for p in submissions}
+                total_score = sum(problem_scores.values())
+
+                scoreboard.append({
+                    'user': user_profile,
+                    'total_score': total_score,
+                    'problem_scores': problem_scores
+                })
+
+            # Sắp xếp giảm dần theo tổng điểm
+            scoreboard.sort(key=lambda x: x['total_score'], reverse=True)
+
+            return JsonResponse({
+                'contest': {
+                    'id': contest.id,
+                    'name': contest.name,
+                    'key': contest.key,
+                },
+                'problems': [
+                    {
+                        'id': p.id,
+                        'name': p.problem.name,
+                        'code': p.problem.code,
+                        'points': p.points
+                    } for p in problems
+                ],
+                'results': scoreboard
+            })
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+

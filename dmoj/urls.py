@@ -29,7 +29,7 @@ from judge.views.widgets import martor_image_uploader
 from judge.views.api.custom_api import (
     OrganizationAPIView, OrganizationContestsAPIView,
     ContestScoreboardAPIView, OrganizationUsersAPIView,
-    TDTUOrganizationAPIView, TDTUOrganizationEditLinkView, TDTUOrganizationDeleteView, TDTUCreateContestView, TDTUContestEditLinkView, TDTUContestDeleteView
+    TDTUOrganizationAPIView, TDTUOrganizationEditLinkView, TDTUOrganizationDeleteView, TDTUCreateContestView, TDTUContestEditLinkView, TDTUContestDeleteView, TDTUContestRankingView
 )
 
 admin.autodiscover()
@@ -448,6 +448,12 @@ urlpatterns = [
     TDTUContestDeleteView.as_view(),
     name='api_tdtu_contest_delete'
 ),
+    path(
+    'api/tdtu/contests/<int:contest_id>/ranking/',
+    TDTUContestRankingView.as_view(),
+    name='api_tdtu_contest_ranking'
+),
+
 
 
 
