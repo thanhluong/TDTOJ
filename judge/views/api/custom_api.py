@@ -585,8 +585,6 @@ class TDTUContestRankingView(View):
                 user_profile = {
                     'id': user.id,
                     'username': user.user.username,
-                    'rating': user.rating,
-                    'points': user.points,
                 }
 
                 # Tính điểm theo bài
@@ -614,14 +612,6 @@ class TDTUContestRankingView(View):
                     'name': contest.name,
                     'key': contest.key,
                 },
-                'problems': [
-                    {
-                        'id': p.id,
-                        'name': p.problem.name,
-                        'code': p.problem.code,
-                        'points': p.points
-                    } for p in problems
-                ],
                 'results': scoreboard
             })
 
