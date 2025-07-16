@@ -583,7 +583,9 @@ class TDTUContestDeleteView(View):
         })
     
     @method_decorator(token_required)
-    def delete(self, request, org_id, contest_id):
+    def delete(self, request, *args, **kwargs):
+        org_id = kwargs.get('org_id')
+        contest_id = kwargs.get('contest_id')
         try:
             # Xác thực organization
             organization = get_object_or_404(Organization, id=org_id)
