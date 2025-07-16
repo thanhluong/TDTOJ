@@ -450,6 +450,15 @@ class TDTUOrganizationEditLinkView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class TDTUOrganizationDeleteView(View):
+    http_method_names = ['delete', 'options']
+    
+    def options(self, request, org_id):
+        """Handle preflight requests for DELETE method"""
+        response = JsonResponse({})
+        response['Access-Control-Allow-Methods'] = 'DELETE, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+        return response
+    
     @method_decorator(token_required)
     def delete(self, request, org_id):
         try:
@@ -537,6 +546,15 @@ class TDTUContestEditLinkView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class TDTUContestDeleteView(View):
+    http_method_names = ['delete', 'options']
+    
+    def options(self, request, org_id, contest_id):
+        """Handle preflight requests for DELETE method"""
+        response = JsonResponse({})
+        response['Access-Control-Allow-Methods'] = 'DELETE, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+        return response
+    
     @method_decorator(token_required)
     def delete(self, request, org_id, contest_id):
         try:
