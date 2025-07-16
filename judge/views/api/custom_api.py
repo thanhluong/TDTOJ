@@ -450,12 +450,21 @@ class TDTUOrganizationEditLinkView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class TDTUOrganizationDeleteView(View):
-    http_method_names = ['delete', 'options']
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Add CORS headers
+        response = super().dispatch(request, *args, **kwargs)
+        if hasattr(response, '__setitem__'):
+            response['Access-Control-Allow-Origin'] = '*'
+            response['Access-Control-Allow-Methods'] = 'DELETE, OPTIONS, GET, POST'
+            response['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+        return response
     
     def options(self, request, org_id):
         """Handle preflight requests for DELETE method"""
         response = JsonResponse({})
-        response['Access-Control-Allow-Methods'] = 'DELETE, OPTIONS'
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'DELETE, OPTIONS, GET, POST'
         response['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
         return response
     
@@ -546,14 +555,32 @@ class TDTUContestEditLinkView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class TDTUContestDeleteView(View):
-    http_method_names = ['delete', 'options']
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Add CORS headers
+        response = super().dispatch(request, *args, **kwargs)
+        if hasattr(response, '__setitem__'):
+            response['Access-Control-Allow-Origin'] = '*'
+            response['Access-Control-Allow-Methods'] = 'DELETE, OPTIONS, GET, POST'
+            response['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+        return response
     
     def options(self, request, org_id, contest_id):
         """Handle preflight requests for DELETE method"""
         response = JsonResponse({})
-        response['Access-Control-Allow-Methods'] = 'DELETE, OPTIONS'
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'DELETE, OPTIONS, GET, POST'
         response['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
         return response
+    
+    def get(self, request, org_id, contest_id):
+        """Debug method to check if the view is accessible"""
+        return JsonResponse({
+            'message': 'Contest delete endpoint is accessible',
+            'org_id': org_id,
+            'contest_id': contest_id,
+            'method': 'GET'
+        })
     
     @method_decorator(token_required)
     def delete(self, request, org_id, contest_id):
