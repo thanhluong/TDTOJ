@@ -11,6 +11,7 @@ import datetime
 import random
 import string
 from judge.models import Organization, Contest, Profile, ContestParticipation, ContestSubmission, Problem, Submission
+from social_django.models import UserSocialAuth
 
 def generate_random_key(length=16):
     allowed_chars = string.ascii_lowercase + string.digits + '_'
