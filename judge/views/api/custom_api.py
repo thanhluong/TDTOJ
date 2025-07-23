@@ -23,26 +23,51 @@ def verify_token(token):
     In the future, this will call side A's API to verify the token.
     """
     # Mock implementation - always return success with dummy user data
-    user_data = {
-        'username': 'admin123',
-    }
-    return True, user_data
+    """
+    Kiểm tra token có tồn tại trong database không và trả về user data
+    """
+    if not token:
+        return False, None
+    
+    try:
+        # Tìm user có access_token khớp với token được cung cấp
+        social_auth = UserSocialAuth.objects.filter(
+            provider='tdt',
+            extra_data__access_token=token
+        ).select_related('user').first()
+        
+        if not social_auth:
+            return False, None
+        
+        # Trả về thông tin user
+        user = social_auth.user
+        user_data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'uid': social_auth.extra_data.get('uid'),
+            'social_auth_id': social_auth.id
+        }
+        
+        return True, user_data
+        
+    except Exception as e:
+        print(f"Error verifying token: {e}")
+        return False, None
 
 
 def token_required(view_func):
     def wrapped_view(request, *args, **kwargs):
-        token = request.headers.get('Authorization')
-        # if not token:
-        #     return JsonResponse({'error': 'Token is required'}, status=401)
+        # Lấy token từ URL parameter 'tokenid'
+        token = request.GET.get('tokenid')
         
-        # # Remove 'Bearer ' prefix if present
-        # if token.startswith('Bearer '):
-        #     token = token[7:]
+        if not token:
+            return JsonResponse({'error': 'Token is required in URL parameter "tokenid"'}, status=401)
         
         is_valid, user_data = verify_token(token)
         
         if not is_valid:
-            return JsonResponse({'error': 'Invalid token'}, status=401)
+            return JsonResponse({'error': 'Invalid or expired token'}, status=401)
         
         # Attach user data to request
         request.user_data = user_data
@@ -381,7 +406,8 @@ class TDTUOrganizationAPIView(View):
                 'name': organization.name,
                 'slug': organization.slug,
                 'short_name': organization.short_name,
-                'redirect_link': redirect_link
+                'redirect_link': redirect_link,
+                'authenticated_user': request.user_data['username']
             }, status=201)
             
         except json.JSONDecodeError:
@@ -665,3 +691,12 @@ class TDTUContestRankingView(View):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
+class TDTUTokenTestView(View):
+    @method_decorator(token_required)
+    def get(self, request):
+        """Endpoint để test token có hợp lệ không"""
+        return JsonResponse({
+            'message': 'Token is valid',
+            'user_data': request.user_data,
+            'timestamp': datetime.datetime.now().isoformat()
+        })
