@@ -29,7 +29,7 @@ from judge.views.widgets import martor_image_uploader
 from judge.views.api.custom_api import (
     OrganizationAPIView, OrganizationContestsAPIView,
     ContestScoreboardAPIView, OrganizationUsersAPIView,
-    TDTUOrganizationAPIView, TDTUOrganizationEditLinkView, TDTUOrganizationDeleteView, TDTUCreateContestView, TDTUContestEditLinkView, TDTUContestDeleteView, TDTUContestRankingView, TDTUTokenTestView
+    TDTUOrganizationAPIView, TDTUOrganizationEditLinkView, TDTUOrganizationDeleteView, TDTUCreateContestView, TDTUContestEditLinkView, TDTUContestDeleteView, TDTUContestRankingView, TDTUTokenTestView, TDTUAdminAccessView
 )
 
 admin.autodiscover()
@@ -454,6 +454,7 @@ urlpatterns = [
     name='api_tdtu_contest_ranking'
 ),
     path('api/tdtu/test-token/', TDTUTokenTestView.as_view(), name='tdtu_test_token'),
+    path('api/tdtu/admin-access/', TDTUAdminAccessView.as_view(), name='tdtu_admin_access'),
 ]
 
 favicon_paths = ['apple-touch-icon-180x180.png', 'apple-touch-icon-114x114.png', 'android-chrome-72x72.png',

@@ -696,6 +696,68 @@ class TDTUTokenTestView(View):
         """Endpoint để test token có hợp lệ không"""
         return JsonResponse({
             'message': 'Token is valid',
-            'user_data': request.user_data,
+            'authenticated': True,
+            'user': {
+                'id': request.user.id,
+                'username': request.user.username,
+                'email': request.user.email,
+                'is_authenticated': request.user.is_authenticated,
+                'is_staff': request.user.is_staff,
+                'is_superuser': request.user.is_superuser,
+            },
+            'profile': {
+                'id': request.profile.id if request.profile else None,
+                'display_rank': request.profile.display_rank if request.profile else None,
+                'points': request.profile.points if request.profile else None,
+                'rating': request.profile.rating if request.profile else None,
+            } if request.profile else None,
+            'user_data': request.user_data,  # Backward compatibility
             'timestamp': datetime.datetime.now().isoformat()
+        })
+
+
+class TDTUAdminAccessView(View):
+    @method_decorator(token_required)
+    def get(self, request):
+        """Generate admin access URLs with token authentication"""
+        
+        # Kiểm tra user có quyền admin không
+        if not (request.user.is_staff or request.user.is_superuser):
+            return JsonResponse({
+                'error': 'User does not have admin privileges'
+            }, status=403)
+        
+        # Lấy token từ request
+        token = request.GET.get('tokenid')
+        if not token:
+            return JsonResponse({
+                'error': 'Token not found in request'
+            }, status=400)
+        
+        # Tạo base admin URL
+        base_admin_url = request.build_absolute_uri('/admin/')
+        
+        # Tạo các admin URLs hữu ích
+        admin_urls = {
+            'admin_home': f"{base_admin_url}?tokenid={token}",
+            'organizations': f"{request.build_absolute_uri('/admin/judge/organization/')}?tokenid={token}",
+            'contests': f"{request.build_absolute_uri('/admin/judge/contest/')}?tokenid={token}",
+            'problems': f"{request.build_absolute_uri('/admin/judge/problem/')}?tokenid={token}",
+            'users': f"{request.build_absolute_uri('/admin/auth/user/')}?tokenid={token}",
+            'profiles': f"{request.build_absolute_uri('/admin/judge/profile/')}?tokenid={token}",
+        }
+        
+        return JsonResponse({
+            'message': 'Admin access URLs generated successfully',
+            'user': {
+                'id': request.user.id,
+                'username': request.user.username,
+                'is_staff': request.user.is_staff,
+                'is_superuser': request.user.is_superuser,
+            },
+            'admin_urls': admin_urls,
+            'instructions': {
+                'usage': 'Click on any of the admin_urls to access Django admin with automatic authentication',
+                'note': 'The tokenid parameter will be automatically processed and removed from the URL'
+            }
         })
