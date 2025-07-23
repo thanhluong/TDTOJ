@@ -733,6 +733,11 @@ AUTHENTICATION_BACKENDS = (
 )
 
 # SOCIAL_AUTH_TDT_KEY_DEV = 'TDTOJ_APP_CLIENT'
+SOCIAL_AUTH_TDT_EXTRA_DATA = [
+    ('access_token', 'access_token'),
+    ('expires_in', 'expires_in'),
+]
+
 SOCIAL_AUTH_TDT_KEY = 'TDTOJ_APP_CLIENT'
 SOCIAL_AUTH_TDT_SECRET = 'iwuiwoeu28782iwueiuejad'
 # SOCIAL_AUTH_TDT_REDIRECT_URI_DEV = 'http://188.166.254.61:8080/complete/tdt'
