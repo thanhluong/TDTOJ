@@ -20,37 +20,35 @@ def generate_random_key(length=16):
 
 def verify_token(token):
     """
-    Placeholder for token verification.
-    In the future, this will call side A's API to verify the token.
-    """
-    # Mock implementation - always return success with dummy user data
-    """
     Kiểm tra token có tồn tại trong database không và trả về user data
     """
     if not token:
         return False, None
     
     try:
-        # Tìm user có access_token khớp với token được cung cấp
-        social_auth = UserSocialAuth.objects.filter(
-            provider='tdt',
-            extra_data__access_token=token
-        ).select_related('user').first()
+        # Lấy tất cả TDT social auth và kiểm tra access_token trong Python
+        # Vì JSONField lookup có thể không hoạt động với một số phiên bản Django
+        social_auths = UserSocialAuth.objects.filter(provider='tdt').select_related('user')
         
-        if not social_auth:
-            return False, None
+        for social_auth in social_auths:
+            stored_token = social_auth.extra_data.get('access_token')
+            if stored_token and stored_token == token:
+                print(f"Found matching user: {social_auth.user.username}")
+                
+                # Trả về thông tin user
+                user = social_auth.user
+                user_data = {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'uid': social_auth.extra_data.get('uid'),
+                    'social_auth_id': social_auth.id
+                }
+                
+                return True, user_data
         
-        # Trả về thông tin user
-        user = social_auth.user
-        user_data = {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'uid': social_auth.extra_data.get('uid'),
-            'social_auth_id': social_auth.id
-        }
-        
-        return True, user_data
+        print(f"No matching token found for: {token[:10]}...")
+        return False, None
         
     except Exception as e:
         print(f"Error verifying token: {e}")
